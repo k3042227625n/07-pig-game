@@ -12,33 +12,86 @@ const btnNew = document.querySelector('.btn--new');
 const btnRoll = document.querySelector('.btn--roll');
 const btnHold = document.querySelector('.btn--hold');
 
-score0EL.textContent = 0;
-score1EL.textContent = 0;
-// diceEL.classList.add('hidden');
+let scores, currentScore, activePlayer, playing;
 
-const scores = [0, 0];
-let currentScore = 0;
-let activePlayer = 0;
-
-btnRoll.addEventListener('click', function() {
-    const dice = Math.trunc(Math.random() * 6) + 1;
-
-    diceEL.classList.remove('hidden');
-    diceEL.src = `dice-${dice}.png`;
+const init = function() {
     
-    if (dice !== 1) {
-        currentScore += dice;
-        document.getElementById(`current--${activePlayer}`).textContent = currentScore;
-        // current0EL.textContent = currentScore;
-    }else {
-        // 次のプレイヤーに交代(プレイヤー０であるかどうかチェック)
-        document.getElementById(`current--${activePlayer}`).textContent = 0;
-        // スコアを一旦０に戻す
+    // 両playerの得点を配列に格納
+    scores = [0, 0];
+    currentScore = 0;
+    activePlayer = 0;
+    playing = true;
+
+    score0EL.textContent = 0;
+    score1EL.textContet = 0;
+    current0EL.textContent = 0;
+    current1EL.textContent = 0;
+
+    diceEL.classList.add('hidden');
+    player0El.classList.remove('player--winner');
+    player1El.classList.remove('player--winner');
+    player0El.classList.add('player--active');
+    player1El.classList.remove('player--active');
+};
+init();
+
+
+const switchPlayer = function() {
+    // currentScoreを0にリセット
+    document.getElementById(`current--${activePlayer}`).textContent = 0;
         currentScore = 0;
+        // activePlayerが0であれば1に変更、そうでなければ0に変更
+        // === 条件 ? 真 : 偽
         activePlayer = activePlayer === 0 ? 1 : 0;
+        // classがなければ追加し、あれば削除
         player0El.classList.toggle('player--active');
         player1El.classList.toggle('player--active');
+}
+
+btnRoll.addEventListener('click', function() {
+    if(playing) {
+
+        const dice = Math.trunc(Math.random() * 6) + 1;
+        console.log(dice);
+
+        diceEL.classList.remove('hidden');
+        // サイコロの目を表示
+        diceEL.src = `dice-${dice}.png`;
         
+        // 1でなければ現在のスコアにサイコロを足す
+        if (dice !== 1) {
+            currentScore += dice;
+            document.getElementById(`current--${activePlayer}`).textContent = currentScore;
+            // current0EL.textContent = currentScore;
+        }else {
+            // 次のプレイヤーに交代(activePlayerを0から1に変更)
+            switchPlayer();
+        }
     }
 });
-// document.querySelector('#current--0').textContent = dice;
+
+btnHold.addEventListener('click', function() {
+    if(playing) {
+
+        scores[activePlayer] += currentScore;
+        // scores[1] = scores[1] + currentscore
+
+        // Holdボタンを押したら合計値が表示
+        document.getElementById(`score--${activePlayer}`).textContent= scores[activePlayer];
+
+        if (scores[activePlayer] >= 20) {
+
+            playing = false;
+            diceEL.classList.add('hidden');
+
+
+            document.querySelector(`.player--${activePlayer}`).classList.add('player--winner');
+            document.querySelector(`.player--${activePlayer}`).classList.remove('player--active');
+        } else {
+            switchPlayer();
+        }
+    }
+
+});
+
+btnNew.addEventListener('click', init);
